@@ -1,4 +1,4 @@
-package com.example.testekotlin
+package com.example.testekotlin.destination
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -11,6 +11,6 @@ enum class Destination(
     val icon: ImageVector,
     val contentDescription: String
 ) {
-    ALL("alls","Alls",Icons.Default.Home,"Alls"),
-    FAVORITE("favorite","Favorite",Icons.Default.Star,"Favorite")
+    ALL("alls","Alls", Icons.Default.Home,"Alls"),
+    FAVORITE("favorite","Favorite", Icons.Default.Star,"Favorite")
 }
