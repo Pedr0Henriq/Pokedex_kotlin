@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
-
-
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -54,16 +54,30 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.ui.tooling.preview.android)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+
     val composeBom = platform("androidx.compose:compose-bom:2025.05.00")
     debugImplementation(libs.androidx.ui.tooling)
     val nav_version = "2.9.3"
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation(libs.androidx.material3)
+
     implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
+
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("com.google.code.gson:gson:2.11.0")
+
+    val room_v = "2.7.2"
+
+    implementation("androidx.room:room-runtime:$room_v")
+    ksp("androidx.room:room-compiler:$room_v")
+    implementation("androidx.room:room-ktx:$room_v")
 
 
 }

@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">Testekotlin</string>
+    <string name="app_name">Carros Elétricos</string>
     <string name="icone_pessoa">Ícone pessoa</string>
     <string name="mensagem_boas_vindas">Bem-vindo ao aplicativo</string>
     <string name="entrar">Entrar</string>
+    <string name="inicio">Inicio</string>
 </resources>
