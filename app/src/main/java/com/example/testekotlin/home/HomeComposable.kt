@@ -49,6 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.testekotlin.destination.Destination
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.testekotlin.home.HomeViewModel
@@ -60,15 +61,11 @@ import com.example.testekotlin.pokemon.AppDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeComposable(navToInsert: () -> Unit, navToDetails: () -> Unit) {
-    val context = LocalContext.current
-    val database = AppDatabase.getDatabase(context)
-    val pokemonDAO = database.pokemonDao()
-    val pokeAPI = ApiClient
+fun HomeComposable(
+    homeModel: HomeViewModel = hiltViewModel(),
+    navToInsert: () -> Unit,
+    navToDetails: () -> Unit) {
 
-    val factory = HomeViewFacttory(pokemonDAO = pokemonDAO, pokeApi = pokeAPI)
-
-    val homeModel: HomeViewModel = viewModel(factory = factory)
     val tabNavController = rememberNavController()
 
     val pokemons = homeModel.pokemons.collectAsState()
@@ -160,7 +157,7 @@ fun HomeComposable(navToInsert: () -> Unit, navToDetails: () -> Unit) {
 }
 
 @Composable
-fun AllPokemons(pokemons:List<PokeDB>, navToDetails: () -> Unit, viewModel: HomeViewModel = viewModel()){
+fun AllPokemons(pokemons:List<PokeDB>, navToDetails: () -> Unit, viewModel: HomeViewModel = hiltViewModel()){
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(8.dp),

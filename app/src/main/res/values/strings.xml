@@ -4,4 +4,5 @@
     <string name="mensagem_boas_vindas">Bem-vindo ao aplicativo</string>
     <string name="entrar">Entrar</string>
     <string name="inicio">Inicio</string>
+    <string name="adicionar">Adicionar Pokemon</string>
 </resources>

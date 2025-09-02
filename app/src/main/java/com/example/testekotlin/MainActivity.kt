@@ -34,16 +34,16 @@ import com.example.testekotlin.home.HomeComposable
 import com.example.testekotlin.pokemon.AppDatabase
 import com.example.testekotlin.pokemon.PokeDBDao
 import com.example.testekotlin.ui.TesteKotlinTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val db = AppDatabase.getDatabase(this)
-        val pokeDAO = db.pokemonDao()
             setContent {
                 TesteKotlinTheme {
-                    NavigationHost(db = db,dao = pokeDAO)
+                    NavigationHost()
                 }
             }
 
@@ -54,8 +54,6 @@ class MainActivity : AppCompatActivity() {
     fun NavigationHost(
         modifier: Modifier = Modifier,
         navController: NavHostController = rememberNavController(),
-        db: AppDatabase,
-        dao: PokeDBDao
     ) {
         NavHost(
             modifier = modifier,
@@ -71,32 +69,30 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
 
-                    }
+                    },
                 )
             }
             
             composable("home") {
                 HomeComposable(navToInsert = {
-                    navController.navigate("insert") {
-                        popUpTo("home") {
-                            inclusive = true
-                        }
-                    }
+                    navController.navigate("insert")
                 }, navToDetails = {
-                    navController.navigate("details") {
-                        popUpTo("home") {
-                            inclusive = true
-                        }
-                    }
+                    navController.navigate("details")
                 })
             }
 
             composable("insert"){
-                InsertComposable()
+                InsertComposable(
+                    navToHome = {
+                        navController.popBackStack()
+                    }
+                )
             }
 
             composable("details"){
-                DetailsComposable()
+                DetailsComposable(navToHome = {
+                    navController.popBackStack()
+                })
             }
 
         }

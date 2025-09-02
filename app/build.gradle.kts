@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
     id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -79,5 +80,9 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_v")
     implementation("androidx.room:room-ktx:$room_v")
 
+    implementation("com.google.dagger:hilt-android:2.56.2")
+    ksp("com.google.dagger:hilt-android-compiler:2.56.2")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
 }

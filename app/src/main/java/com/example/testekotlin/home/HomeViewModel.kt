@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.testekotlin.api.ApiClient
 import com.example.testekotlin.database.PokeDB
 import com.example.testekotlin.pokemon.PokeDBDao
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val pokemonDAO: PokeDBDao,
     private val pokeApi: ApiClient) : ViewModel() {
 
@@ -46,11 +49,8 @@ class HomeViewModel(
                        _pokemons.value = _pokemons.value + pokemon
                        return@launch
                    }
-                       val pokemonfetched = fetchAndSavePokemon(query = name, id = id)
+                       fetchAndSavePokemon(query = name, id = id)
 
-                       if(pokemonfetched!=null){
-                           _pokemons.value = _pokemons.value + pokemonfetched
-                       }
 
                } catch (e: Exception){
                    Log.e("PokemonViewModel","Erro ao procurar pokemon na API",e)
@@ -62,15 +62,15 @@ class HomeViewModel(
 
 
 
-    suspend fun fetchAndSavePokemon(query: String? = null, id: Long? = null): PokeDB? {
-        return try {
+    suspend fun fetchAndSavePokemon(query: String? = null, id: Long? = null){
+        try {
 
             val pokemonEntity = when {
                 query != null -> pokeApi.retrofit.findPokemonByName(query)
                 id != null -> pokeApi.retrofit.findPokemonById(id.toInt())
-                else -> return null
+                else -> null
             }
-
+            if(pokemonEntity == null) return
             val pokedbId = pokemonDAO.insertPokemons(
                 PokeDB(
                     name = pokemonEntity.name,
@@ -83,7 +83,7 @@ class HomeViewModel(
                 )
             )
 
-            pokemonDAO.findById(pokedbId)
+           _pokemons.value = _pokemons.value + pokemonDAO.findById(pokedbId)
 
         } catch (e: Exception) {
             Log.e("PokemonViewModel", "Erro ao buscar/salvar Pokemon", e)

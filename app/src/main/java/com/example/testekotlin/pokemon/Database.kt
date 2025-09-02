@@ -15,25 +15,4 @@ abstract class AppDatabase : RoomDatabase(){
 
     abstract fun pokemonDao() : PokeDBDao
 
-    companion object {
-        @Volatile
-        private var INSTANCE : AppDatabase? = null
-
-        fun getDatabase(context: Context) : AppDatabase {
-            val tempInstance = INSTANCE
-
-            if(tempInstance !=null){
-                return tempInstance
-            }
-            synchronized(this) {
-                val instance = Room.databaseBuilder(
-                   context =  context.applicationContext,
-                   klass =   AppDatabase::class.java,
-                   name =  "banco_de_dados"
-                ).build()
-                INSTANCE = instance
-                return instance
-            }
-        }
-    }
 }
