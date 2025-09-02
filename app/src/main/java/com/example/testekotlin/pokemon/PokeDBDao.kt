@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.testekotlin.database.PokeDB
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokeDBDao {
@@ -20,7 +21,7 @@ interface PokeDBDao {
     suspend fun deletePokemons(pokemons:PokeDB)
 
     @Query("SELECT * FROM pokemons")
-    suspend fun getAll():List<PokeDB>
+    fun getAll():Flow<List<PokeDB>>
 
     @Query("SELECT * FROM pokemons WHERE id = :pokemonId")
     suspend fun findById(pokemonId: Long): PokeDB
@@ -29,5 +30,5 @@ interface PokeDBDao {
     suspend fun findByName(pokemonName:String): PokeDB
 
     @Query("SELECT * FROM pokemons WHERE isFavorite = 1")
-    suspend fun getAllFavorite():List<PokeDB>
+    fun getAllFavorite():Flow<List<PokeDB>>
 }
