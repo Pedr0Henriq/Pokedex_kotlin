@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Carros Elétricos</string>
+    <string name="app_name">Minha Pokedex</string>
     <string name="icone_pessoa">Ícone pessoa</string>
     <string name="mensagem_boas_vindas">Bem-vindo ao aplicativo</string>
     <string name="entrar">Entrar</string>
-    <string name="inicio">Inicio</string>
+    <string name="inicio">Minha Pokedex</string>
     <string name="adicionar">Adicionar Pokemon</string>
 </resources>

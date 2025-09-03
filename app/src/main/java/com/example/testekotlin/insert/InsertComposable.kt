@@ -1,4 +1,4 @@
-package com.example.testekotlin
+package com.example.testekotlin.insert
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.lifecycle.viewModelScope
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -31,12 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.testekotlin.R
 import com.example.testekotlin.home.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,9 +101,9 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                     .fillMaxWidth(),
                 onClick = {
                     CoroutineScope(Dispatchers.IO).launch {
-                        homeModel.fetchAndSavePokemon(query = pokemonName.value)
+                        homeModel.fetchAndSavePokemon(query = pokemonName.value.lowercase().trim())
                         withContext(Dispatchers.Main) {
-                            snackbarHostState.showSnackbar("Pokemón adicionado com sucesso")
+                            homeModel.showSnackBar()
                             navToHome()
                         }
                     }

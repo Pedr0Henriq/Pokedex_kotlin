@@ -27,12 +27,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.testekotlin.details.DetailsComposable
 import com.example.testekotlin.home.HomeComposable
-import com.example.testekotlin.pokemon.AppDatabase
-import com.example.testekotlin.pokemon.PokeDBDao
+import com.example.testekotlin.insert.InsertComposable
 import com.example.testekotlin.ui.TesteKotlinTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -76,8 +78,8 @@ class MainActivity : AppCompatActivity() {
             composable("home") {
                 HomeComposable(navToInsert = {
                     navController.navigate("insert")
-                }, navToDetails = {
-                    navController.navigate("details")
+                }, navToDetails = { id: Long ->
+                    navController.navigate("details/${id}")
                 })
             }
 
@@ -89,7 +91,12 @@ class MainActivity : AppCompatActivity() {
                 )
             }
 
-            composable("details"){
+            composable("details/{id}",
+                arguments = listOf(
+                    navArgument("id"){
+                        type = NavType.LongType
+                    }
+                )){
                 DetailsComposable(navToHome = {
                     navController.popBackStack()
                 })

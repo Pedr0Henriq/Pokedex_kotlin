@@ -11,6 +11,6 @@ enum class Destination(
     val icon: ImageVector,
     val contentDescription: String
 ) {
-    ALL("alls","Alls", Icons.Default.Home,"Alls"),
-    FAVORITE("favorite","Favorite", Icons.Default.Star,"Favorite")
+    ALL("alls","Todos", Icons.Default.Home,"Todos"),
+    FAVORITE("favorite","Favoritos", Icons.Default.Star,"Favoritos")
 }

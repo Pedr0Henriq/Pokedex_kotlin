@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.testekotlin.api.ApiClient
 import com.example.testekotlin.database.PokeDB
-import com.example.testekotlin.pokemon.PokeDBDao
+import com.example.testekotlin.database.PokeDBDao
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -26,12 +26,14 @@ class HomeViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
-    // Exposes the favorites list reactively
     val favoritePokemons: StateFlow<List<PokeDB>> = pokemonDAO.getAllFavorite().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    private val _snackbarEvent = MutableSharedFlow<String>()
+    val snackbarEvent = _snackbarEvent.asSharedFlow()
 
     fun findPokemon(id: Long? = null, name: String? = null) {
            viewModelScope.launch {
@@ -91,10 +93,17 @@ class HomeViewModel @Inject constructor(
                 val updatedPokemon = pokemon.copy(
                     isFavorite = favorite
                 )
+                Log.i("Novo Pokemon","$updatedPokemon")
                 pokemonDAO.updatePokemons(updatedPokemon)
             } catch (e: Exception){
                 Log.e("HomeViewModel", "Erro ao atualizar status de favorito: $e")
             }
+        }
+    }
+
+    fun showSnackBar(){
+        viewModelScope.launch {
+            _snackbarEvent.emit("Pokémon adicionado com sucesso!")
         }
     }
 }

@@ -27,10 +27,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -48,15 +52,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.testekotlin.destination.Destination
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.example.testekotlin.home.HomeViewModel
 import com.example.testekotlin.R
-import com.example.testekotlin.api.ApiClient
 import com.example.testekotlin.database.PokeDB
-import com.example.testekotlin.pokemon.AppDatabase
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,7 +63,7 @@ import com.example.testekotlin.pokemon.AppDatabase
 fun HomeComposable(
     homeModel: HomeViewModel = hiltViewModel(),
     navToInsert: () -> Unit,
-    navToDetails: () -> Unit) {
+    navToDetails: (id:Long) -> Unit) {
 
     val tabNavController = rememberNavController()
 
@@ -74,10 +73,19 @@ fun HomeComposable(
     val startDestination = Destination.ALL
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = Unit) {
+        homeModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         containerColor = Color.White,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 colors = topAppBarColors(
@@ -117,7 +125,11 @@ fun HomeComposable(
                         },
                         label = {
                             Text(destination.label)
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = Color.White
+                        )
                     )
                 }
             }
@@ -130,7 +142,7 @@ fun HomeComposable(
                     navToInsert()
                 },
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = colorResource(R.color.md_theme_inversePrimary),
+                    containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
                 ),
             ) { Icon(
@@ -157,7 +169,7 @@ fun HomeComposable(
 }
 
 @Composable
-fun AllPokemons(pokemons:List<PokeDB>, navToDetails: () -> Unit, viewModel: HomeViewModel = hiltViewModel()){
+fun AllPokemons(pokemons:List<PokeDB>, navToDetails: (id:Long) -> Unit, viewModel: HomeViewModel = hiltViewModel()){
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(8.dp),
@@ -176,18 +188,33 @@ fun AllPokemons(pokemons:List<PokeDB>, navToDetails: () -> Unit, viewModel: Home
 }
 
 @Composable
-fun FavoritePokemons(pokemons:List<PokeDB>, navToDetails: () -> Unit){
+fun FavoritePokemons(pokemons:List<PokeDB>, navToDetails: (id:Long) -> Unit,viewModel: HomeViewModel = hiltViewModel()){
 
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(pokemons) { pokemon ->
+            PokeCard(
+                pokemon = pokemon,
+                navToDetails = navToDetails,
+                onToggleFavorite = { pokemonToUpdate, isFavorite ->
+                    viewModel.updateFavorite(pokemon = pokemonToUpdate, favorite = isFavorite)
+                })
+        }
+    }
 }
 
 
 @Composable
-fun PokeCard(pokemon: PokeDB, navToDetails: () -> Unit, onToggleFavorite: (PokeDB, Boolean) -> Unit){
+fun PokeCard(pokemon: PokeDB, navToDetails: (id:Long) -> Unit, onToggleFavorite: (PokeDB, Boolean) -> Unit){
 
     val painter = rememberAsyncImagePainter(model = pokemon.photo)
     ElevatedCard(
         onClick = {
-            navToDetails()
+            navToDetails(pokemon.id)
         },
         modifier = Modifier
             .padding(4.dp)
@@ -239,7 +266,7 @@ fun PokeCard(pokemon: PokeDB, navToDetails: () -> Unit, onToggleFavorite: (PokeD
             }
             IconButton(
                 onClick = {
-                    onToggleFavorite(pokemon,pokemon.isFavorite)
+                    onToggleFavorite(pokemon,!pokemon.isFavorite)
                 },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -248,6 +275,7 @@ fun PokeCard(pokemon: PokeDB, navToDetails: () -> Unit, onToggleFavorite: (PokeD
                     val icon = if (pokemon.isFavorite) Icons.Filled.Star else Icons.Outlined.Star
                     Icon(
                         imageVector = icon,
+                        tint = if(pokemon.isFavorite) colorResource(R.color.md_theme_secondaryFixedDim) else Color.Black,
                         contentDescription = "Favorito",
                     )
                 },
