@@ -56,6 +56,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.ui.tooling.preview.android)
 
+    implementation("androidx.core:core-splashscreen:1.0.1" )
+
     val composeBom = platform("androidx.compose:compose-bom:2025.05.00")
     debugImplementation(libs.androidx.ui.tooling)
     val nav_version = "2.9.3"
@@ -64,8 +66,6 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation("androidx.navigation:navigation-compose:$nav_version")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
-
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")

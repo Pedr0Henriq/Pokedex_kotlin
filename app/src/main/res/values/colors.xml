@@ -46,6 +46,8 @@
     <color name="md_theme_surfaceContainer">#EBEFE8</color>
     <color name="md_theme_surfaceContainerHigh">#E5EAE2</color>
     <color name="md_theme_surfaceContainerHighest">#DFE4DC</color>
+    <color name="pokemon_red">#EA2424</color>
+    <color name="pokemon_background">#E8FBF8</color>
     <color name="md_theme_primary_mediumContrast">#003F1F</color>
     <color name="md_theme_onPrimary_mediumContrast">#FFFFFF</color>
     <color name="md_theme_primaryContainer_mediumContrast">#3F7951</color>

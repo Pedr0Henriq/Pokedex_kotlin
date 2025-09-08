@@ -7,10 +7,14 @@ import com.example.testekotlin.api.ApiClient
 import com.example.testekotlin.database.PokeDB
 import com.example.testekotlin.database.PokeDBDao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -30,6 +34,15 @@ class HomeViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
+    )
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    val filterPokemons: StateFlow<List<PokeDB>> = filterPokemons(
+        pokemonsFlow = pokemons,
+        searchQuery = searchQuery,
+        scope = viewModelScope
     )
 
     private val _snackbarEvent = MutableSharedFlow<String>()
@@ -99,6 +112,34 @@ class HomeViewModel @Inject constructor(
                 Log.e("HomeViewModel", "Erro ao atualizar status de favorito: $e")
             }
         }
+    }
+
+    fun filterPokemons(
+        pokemonsFlow: StateFlow<List<PokeDB>>,
+        scope: CoroutineScope,
+        searchQuery: StateFlow<String>): StateFlow<List<PokeDB>>{
+        return combine(pokemonsFlow,searchQuery){ pokemonsList, query ->
+            if(query.isBlank()){
+                pokemonsList
+            } else{
+                pokemonsList.filter {
+                    pokemon ->
+                    pokemon.types.any { it.type.name == query}
+                }
+            }
+        }.stateIn(
+            scope = scope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+    }
+
+    fun onSearchQueryChanged(query:String){
+        if(query == "todos"){
+            _searchQuery.value = ""
+            return
+        }
+        _searchQuery.value = query
     }
 
     fun showSnackBar(){

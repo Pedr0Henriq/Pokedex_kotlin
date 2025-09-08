@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -14,16 +16,22 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
@@ -32,6 +40,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,10 +61,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.testekotlin.destination.Destination
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.testekotlin.R
 import com.example.testekotlin.database.PokeDB
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,11 +82,14 @@ fun HomeComposable(
 
     val pokemons = homeModel.pokemons.collectAsState()
     val favoritePokemons = homeModel.favoritePokemons.collectAsState()
+    val filteredPokemons = homeModel.filterPokemons.collectAsState()
     val destinations = remember { Destination.entries }
     val startDestination = Destination.ALL
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var showDialog by remember {mutableStateOf(false)}
 
     LaunchedEffect(key1 = Unit) {
         homeModel.snackbarEvent.collect { message ->
@@ -84,7 +100,7 @@ fun HomeComposable(
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
-        containerColor = Color.White,
+        containerColor = colorResource(R.color.pokemon_background),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
@@ -93,14 +109,24 @@ fun HomeComposable(
                     titleContentColor = Color.White
                 ),
                 title = {
-                    Text(text = stringResource(R.string.inicio))
+                    Text(
+                        text = stringResource(R.string.inicio),
+                        color = Color.Black)
                 },
                 actions = {
                     IconButton(
+                        modifier = Modifier.padding(16.dp).size(24.dp),
                         onClick = {
-
+                            showDialog = true
                         }
-                    ) { }
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(30.dp),
+                            painter = painterResource(R.drawable.ic_filter),
+                            tint = Color.Black,
+                            contentDescription = "Filtrar Tipo"
+                        )
+                    }
                 }
             )
         },
@@ -153,18 +179,99 @@ fun HomeComposable(
             )}
         }
     ) {
-            innerPadding -> NavHost(
-        navController = tabNavController,
-        startDestination = destinations.first().route,
-        modifier = Modifier.padding(innerPadding)
-    ){
-        composable(Destination.ALL.route) {
-            AllPokemons(pokemons = pokemons.value,navToDetails)
+            innerPadding ->
+            NavHost(
+                navController = tabNavController,
+                startDestination = destinations.first().route,
+                modifier = Modifier.padding(innerPadding)
+            ){
+                composable(Destination.ALL.route) {
+                    AllPokemons(pokemons = filteredPokemons.value,navToDetails)
+                }
+                composable(Destination.FAVORITE.route) {
+                    FavoritePokemons(pokemons = favoritePokemons.value,navToDetails)
+                }}
+
+
+            if(showDialog) {
+                Dialog(
+                    onDismissRequest = {
+                        showDialog = false
+                    }
+                ) {
+                    Card(
+                        modifier = Modifier.size(200.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp).fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Selecione o tipo")
+                            Spacer(modifier = Modifier.height(12.dp))
+                            TypesDropdownMenu(
+                                onDimissRequest = {
+                                    showDialog = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         }
-        composable(Destination.FAVORITE.route) {
-            FavoritePokemons(pokemons = favoritePokemons.value,navToDetails)
+
+
+
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TypesDropdownMenu(onDimissRequest: () -> Unit, homeModel: HomeViewModel = hiltViewModel()) {
+    val options = listOf(
+        "normal", "fire", "water", "electric", "grass", "ice","todos","fighting",
+        "poison","ground","flying","psychic","bug","rock","ghost","dragon", "dark",
+        "steel", "fairy"
+    )
+    var expanded by remember {mutableStateOf(false)}
+    var selectedOptionText by remember { mutableStateOf(options[0]) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {expanded = !expanded}
+    ) {
+        TextField(
+            modifier = Modifier.menuAnchor(),
+            readOnly = true,
+            value = selectedOptionText,
+            onValueChange = {},
+            label = { Text("Tipo") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {expanded = false},
+            containerColor = Color.White,
+        ) {
+            options.forEach { selectOption ->
+                DropdownMenuItem(
+                    text = { Text(selectOption)},
+                    onClick = {
+                        selectedOptionText = selectOption
+                        expanded = false
+                        homeModel.onSearchQueryChanged(selectOption)
+                        onDimissRequest()
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding ,
+                    colors = MenuDefaults.itemColors(
+                        textColor = Color.Black
+                    ))
+            }
         }
-    }
     }
 }
 
@@ -257,7 +364,9 @@ fun PokeCard(pokemon: PokeDB, navToDetails: (id:Long) -> Unit, onToggleFavorite:
             ){
                 Image(
                     painter = painter,
-                    modifier = Modifier.size(120.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .size(120.dp)
+                        .fillMaxWidth(),
                     contentDescription = "Imagem de ${pokemon.name}"
                 )
                 Text(text =pokemon.name,

@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,12 +58,13 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                 title = {
                     Text(text = stringResource(R.string.adicionar))
                 },
-                actions = {
+                navigationIcon = {
                     IconButton(
                         onClick = {
                             navToHome()
                         },
                         modifier = Modifier
+                            .padding(start = 16.dp)
                             .size(24.dp),
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = Color.White
@@ -73,7 +75,7 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                             contentDescription = "Voltar"
                         )
                     }
-                }
+                },
             )
         },
     ) {
@@ -94,7 +96,10 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                 label = {Text("Nome")},
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = {Text("Insira o nome do pokemon")}
+                placeholder = {Text("Insira o nome do pokemon")},
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black
+                )
             )
             OutlinedButton(
                 modifier = Modifier
