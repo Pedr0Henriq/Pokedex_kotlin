@@ -132,12 +132,11 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                                 navToHome()
                             }
                         }
-                    } else{
+                    } else {
                         CoroutineScope(Dispatchers.Main).launch {
                             snackbarHostState.showSnackbar("O nome do Pokémon não pode estar vazio!")
                         }
                     }
-
                 },
                 enabled = !isLoading,
                 shape = RoundedCornerShape(12.dp),
