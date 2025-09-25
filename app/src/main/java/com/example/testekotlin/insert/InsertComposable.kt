@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,10 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.testekotlin.R
 import com.example.testekotlin.home.HomeViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +50,7 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
     val snackbarHostState = remember { SnackbarHostState() }
     val pokemonName = remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    val composableScope = rememberCoroutineScope()
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -124,16 +123,19 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                 onClick = {
                     if(pokemonName.value.isNotBlank()){
                         isLoading = true
-                        CoroutineScope(Dispatchers.IO).launch {
-                            homeModel.fetchAndSavePokemon(query = pokemonName.value.lowercase().trim())
-                            withContext(Dispatchers.Main) {
+                        composableScope.launch{
+                            try {
+                                homeModel.fetchAndSavePokemon(query = pokemonName.value.lowercase().trim())
                                 isLoading = false
-                                homeModel.showSnackBar()
+                                snackbarHostState.showSnackbar("Pokemon encontrado")
                                 navToHome()
+                            } catch (e: Exception){
+                                isLoading = false
+                                snackbarHostState.showSnackbar("Erro ao buscar Pokémon: ${e.message}")
                             }
                         }
                     } else {
-                        CoroutineScope(Dispatchers.Main).launch {
+                        composableScope.launch {
                             snackbarHostState.showSnackbar("O nome do Pokémon não pode estar vazio!")
                         }
                     }
@@ -145,20 +147,22 @@ fun InsertComposable(navToHome: () -> Unit, homeModel: HomeViewModel = hiltViewM
                     contentColor = Color.White
                 )
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 3.dp
-                    )
-                } else {
+
                     Text(
                         text = "Buscar e Adicionar",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
-                }            }
+                       }
+
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White,
+                    strokeWidth = 3.dp
+                )
+            }
         }
 
     }

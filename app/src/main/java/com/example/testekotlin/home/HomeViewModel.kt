@@ -8,6 +8,7 @@ import com.example.testekotlin.database.PokeDB
 import com.example.testekotlin.database.PokeDBDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,34 +73,27 @@ class HomeViewModel @Inject constructor(
 
 
     suspend fun fetchAndSavePokemon(query: String? = null, id: Long? = null){
-        viewModelScope.launch{
-            try {
-
-                val pokemonEntity = when {
+        val pokemonEntity = when {
                     query != null -> pokeApi.retrofit.findPokemonByName(query)
                     id != null -> pokeApi.retrofit.findPokemonById(id.toInt())
                     else -> null
-                }
-                if(pokemonEntity == null) return@launch
-                val pokedbId = pokemonDAO.insertPokemons(
-                    PokeDB(
-                        name = pokemonEntity.name,
-                        isFavorite = false,
-                        height = pokemonEntity.height,
-                        weight = pokemonEntity.weight,
-                        photo = pokemonEntity.sprites.frontDefault,
-                        abilities = pokemonEntity.abilities,
-                        types = pokemonEntity.types
-                    )
+        }
+        if(pokemonEntity == null) return
+        withContext(Dispatchers.IO) {
+            pokemonDAO.insertPokemons(
+                PokeDB(
+                    name = pokemonEntity.name,
+                    isFavorite = false,
+                    height = pokemonEntity.height,
+                    weight = pokemonEntity.weight,
+                    photo = pokemonEntity.sprites.frontDefault,
+                    abilities = pokemonEntity.abilities,
+                    types = pokemonEntity.types
                 )
-
-            } catch (e: Exception) {
-                Log.e("PokemonViewModel", "Erro ao buscar/salvar Pokemon", e)
-                null
-            }
+            )
         }
 
-    }
+        }
 
     fun updateFavorite(pokemon: PokeDB, favorite: Boolean){
         viewModelScope.launch {
