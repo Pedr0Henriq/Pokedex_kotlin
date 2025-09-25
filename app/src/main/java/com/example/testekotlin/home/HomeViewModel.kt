@@ -50,28 +50,6 @@ class HomeViewModel @Inject constructor(
     private val _snackbarEvent = MutableSharedFlow<String>()
     val snackbarEvent = _snackbarEvent.asSharedFlow()
 
-    fun findPokemon(id: Long? = null, name: String? = null) {
-           viewModelScope.launch {
-               try {
-                   val pokemon = when{
-                       name!=null -> pokemonDAO.findByName(name)
-                       id!=null -> pokemonDAO.findById(id)
-                       else -> null
-                   }
-
-                       fetchAndSavePokemon(query = name, id = id)
-
-
-               } catch (e: Exception){
-                   Log.e("PokemonViewModel","Erro ao procurar pokemon na API",e)
-
-               }
-           }
-
-    }
-
-
-
     suspend fun fetchAndSavePokemon(query: String? = null, id: Long? = null){
         val pokemonEntity = when {
                     query != null -> pokeApi.retrofit.findPokemonByName(query)
@@ -135,11 +113,5 @@ class HomeViewModel @Inject constructor(
             return
         }
         _searchQuery.value = query
-    }
-
-    fun showSnackBar(){
-        viewModelScope.launch {
-            _snackbarEvent.emit("Pokémon adicionado com sucesso!")
-        }
     }
 }
